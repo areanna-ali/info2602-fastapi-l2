@@ -2,7 +2,7 @@ import typer
 from app.database import create_db_and_tables, get_session, drop_all
 from app.models import User
 from fastapi import Depends
-from sqlmodel import select
+from sqlmodel import select, SQLModel
 from sqlalchemy.exc import IntegrityError
 
 cli = typer.Typer()
@@ -79,14 +79,22 @@ def delete_user(username: str):
 
 #1
 @cli.command()
-def find_user(query, db):
-    sql = "SELECT username, email FROM user WHERE username LIKE ? OR email like ?"
-    results = db.execute(sql, (f"%{query}%", f"%{query}%")).fetchall()
-    if results:
-        for username, email in results:
-            print(f"Found: {username} ({email})")
-    else:
-        print("No match found!")
+def find_user(query):
+    with get_session() as db:
+        sql_query = select(User).where(
+            User.username.like(f"%{query}%") |
+            User.email.like(f"%{query}%")
+        )
+
+        results = db.exec(sql_query).all()
+
+        if results:
+            for user in results:
+                print(f"Found: {user.username} ({user.email})")
+        else:
+            print("No match found!")
+
+    
 
 
 
