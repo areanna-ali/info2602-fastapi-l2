@@ -75,6 +75,21 @@ def delete_user(username: str):
         db.commit()
         print(f'{username} deleted')
 
+#Exercises
+
+#1
+@cli.command()
+def find_user(query, db):
+    sql = "SELECT username, email FROM user WHERE username LIKE ? OR email like ?"
+    results = db.execute(sql, (f"%{query}%", f"%{query}%")).fetchall()
+    if results:
+        for username, email in results:
+            print(f"Found: {username} ({email})")
+    else:
+        print("No match found!")
+
+
+
 
 if __name__ == "__main__":
     cli()
